@@ -1,7 +1,7 @@
 ---
-version: 1.0
-last_updated: 2026-03-08
-owner: Human (You)
+version:
+last_updated: 
+owner: 
 ---
 
 # Company Handbook
