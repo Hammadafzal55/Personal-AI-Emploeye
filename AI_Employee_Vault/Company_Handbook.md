@@ -113,17 +113,17 @@ This document defines how the AI Employee (Claude Code) must behave. Claude read
 
 ## 10. Business Context
 
-- **Business Name:** Hammad Afzal — AI & Software Solutions
-- **Industry:** Tech / Software Development
-- **Primary Services:** AI Engineering, Software Development, Junior-level mentorship and training
-- **Target Audience:** Entrepreneurs, beginners, students, fresh graduates, and anyone looking to break into tech or leverage AI
-- **Tone of Voice:** Professional yet approachable. Inspiring. Practical. Never overly corporate.
-- **Content Pillars for LinkedIn:** AI tools & automation, career advice for junior devs, project showcases, tech tutorials, hackathon journey
-- **Active Projects:** Personal AI Employee (Hackathon 0) — building an autonomous AI-powered Digital FTE using Claude Code + Obsidian
+- **Business Name:** Your Bussiness Name
+- **Industry:** 
+- **Primary Services:** 
+- **Target Audience:** 
+- **Tone of Voice:**
+- **Content Pillars for LinkedIn:**
+- **Active Projects:** P
 - **Monthly Revenue Target:** To be defined
-- **Working Hours (for scheduling):** 9:00 AM – 6:00 PM, Monday–Friday
+- **Working Hours (for scheduling):** 
 
 ---
 
-*This handbook was last reviewed on: 2026-03-08*
-*Next scheduled review: 2026-04-08*
+*This handbook was last reviewed on: *
+*Next scheduled review: *
