@@ -1,0 +1,22 @@
+# Personal AI Employee — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# ── Bronze ───────────────────────────────────────────────────────────────────
+watchdog>=4.0.0          # Filesystem watcher
+python-dotenv>=1.0.0     # .env file support
+
+# ── Silver ───────────────────────────────────────────────────────────────────
+schedule>=1.2.0          # Time-based job scheduling (daily/weekly briefings)
+
+# Gmail Watcher + Email Send action
+google-auth>=2.0.0
+google-auth-oauthlib>=1.0.0
+google-api-python-client>=2.0.0
+
+# LinkedIn posting via Playwright
+playwright>=1.40.0
+# After installing, also run: playwright install chromium
+
+# ── Gold (future) ─────────────────────────────────────────────────────────────
+# xmlrpc (built-in) — for Odoo JSON-RPC integration
+# whatsapp-web (Playwright session) — WhatsApp Watcher

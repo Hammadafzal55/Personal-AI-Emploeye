@@ -1,0 +1,43 @@
+# ── Credentials & Secrets (NEVER commit these) ───────────────────────────────
+.env
+secrets/
+*.token
+*.key
+credentials.json
+secrets/gmail_credentials.json
+secrets/gmail_token.json
+secrets/linkedin_session/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# ── Node / npm ────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+
+# ── Playwright ────────────────────────────────────────────────────────────────
+playwright-report/
+test-results/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Obsidian (keep .obsidian/ config but not workspace state) ─────────────────
+AI_Employee_Vault/.obsidian/workspace.json
+AI_Employee_Vault/.obsidian/workspace-mobile.json
+
+# ── Logs (keep structure, ignore actual log content from git) ─────────────────
+# Comment out the next line if you WANT to commit logs
+# AI_Employee_Vault/Logs/*.md
