@@ -119,7 +119,7 @@ This document defines how the AI Employee (Claude Code) must behave. Claude read
 - **Target Audience:** 
 - **Tone of Voice:**
 - **Content Pillars for LinkedIn:**
-- **Active Projects:** P
+- **Active Projects:** 
 - **Monthly Revenue Target:** To be defined
 - **Working Hours (for scheduling):** 
 
