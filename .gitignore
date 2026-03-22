@@ -41,8 +41,6 @@ AI_Employee_Vault/.obsidian/workspace-mobile.json
 # ── Hackathon blueprint document (keep local only) ────────────────────────────
 Personal AI Employee Hackathon 0_*.md
 
-# ── Vault — commit structure + plans + briefings, skip runtime personal data ──
-# Uncomment lines below if you want to EXCLUDE those files from git:
-# AI_Employee_Vault/Logs/*.md
-# AI_Employee_Vault/Done/*.md
-# AI_Employee_Vault/Pending_Approval/*.md
+# ── Vault — only README.md files tracked; all other vault .md files are local ──
+AI_Employee_Vault/**/*.md
+!AI_Employee_Vault/**/README.md
