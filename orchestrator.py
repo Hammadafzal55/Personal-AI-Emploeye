@@ -148,8 +148,8 @@ WEEKLY_CEO_PROMPT = (
 PROCESS_APPROVALS_PROMPT = (
     "Run the process-approvals skill. "
     "Check AI_Employee_Vault/Pending_Approval/Approved/ for new approval files. "
-    "For each: read the action type and call the appropriate action script "
-    "(actions/send_email.py for send_email, actions/post_linkedin.py for post_linkedin). "
+    "For send_email actions: use the gmail MCP send_email tool (NOT any Python script). "
+    "For post_linkedin actions: run actions/post_linkedin.py. "
     "Update the related task status, log results, and update Dashboard.md."
 )
 
@@ -339,50 +339,49 @@ def _run_linkedin_serialised(script: Path, path: Path):
 
 
 def _dispatch_approved(path: Path):
-    """Directly run the correct action script for an approved file."""
+    """Dispatch the correct executor for an approved file.
+
+    send_email  → Claude (with gmail MCP server) processes the file using the
+                  gmail.send_email MCP tool.  No Python script involved.
+    post_linkedin → Python actions/post_linkedin.py (Playwright-based).
+    unknown     → Fallback to Claude process-approvals skill.
+    """
     action = _read_frontmatter_action(path)
-    scripts = {
-        "send_email":    Path(__file__).parent / "actions" / "send_email.py",
-        "post_linkedin": Path(__file__).parent / "actions" / "post_linkedin.py",
-    }
-    script = scripts.get(action)
-    if script and script.exists():
-        logger.info(f"Dispatching {action} → {script.name} for {path.name}")
-        append_log("approval_dispatched", {"file": path.name, "action": action})
-        if action == "post_linkedin":
-            # LinkedIn: serialised — acquire lock so only one Chrome instance runs at a time
+    append_log("approval_dispatched", {"file": path.name, "action": action})
+
+    if action == "send_email":
+        # Use Claude + gmail MCP server — Claude calls the gmail.send_email tool
+        logger.info(f"Dispatching send_email via gmail MCP for {path.name}")
+        prompt = (
+            "Run the process-approvals skill. "
+            f"Process this single approved email file: {path}. "
+            "Read the frontmatter (to, subject, thread_id, in_reply_to, body_file). "
+            "Use the gmail MCP send_email tool to send the email. "
+            "Move the approved file to AI_Employee_Vault/Done/ on success. "
+            "Append a log entry to AI_Employee_Vault/Logs/ and update Dashboard.md."
+        )
+        threading.Thread(
+            target=run_claude,
+            args=(prompt, "send-email-mcp"),
+            daemon=True,
+        ).start()
+
+    elif action == "post_linkedin":
+        # LinkedIn: Python + Playwright, serialised so only one Chrome runs at a time
+        script = Path(__file__).parent / "actions" / "post_linkedin.py"
+        if script.exists():
+            logger.info(f"Dispatching post_linkedin → {script.name} for {path.name}")
             threading.Thread(
                 target=_run_linkedin_serialised,
                 args=(script, path),
                 daemon=True,
             ).start()
         else:
-            # Other actions (send_email, etc.) — run in a thread so output routes through logger
-            def _run_action(script=script, path=path, action=action):
-                result = subprocess.run(
-                    [sys.executable, str(script), str(path)],
-                    env=os.environ.copy(),
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    errors="replace",
-                )
-                tag = f"[{action}]"
-                for line in (result.stdout or "").splitlines():
-                    if line.strip():
-                        logger.info(f"{tag} {line.strip()}")
-                for line in (result.stderr or "").splitlines():
-                    if line.strip():
-                        logger.warning(f"{tag} {line.strip()}")
-                if result.returncode != 0:
-                    logger.error(f"{tag} failed for {path.name} (exit {result.returncode})")
-                else:
-                    logger.info(f"{tag} completed for {path.name}")
-            threading.Thread(target=_run_action, daemon=True).start()
+            logger.error(f"post_linkedin script not found: {script}")
+
     else:
-        # Unknown action — fall back to Claude
+        # Unknown action — fall back to Claude process-approvals skill
         logger.info(f"Unknown action '{action}' in {path.name} — falling back to Claude")
-        append_log("approval_detected", {"file": path.name})
         threading.Thread(
             target=run_claude,
             args=(PROCESS_APPROVALS_PROMPT, "process-approvals"),
