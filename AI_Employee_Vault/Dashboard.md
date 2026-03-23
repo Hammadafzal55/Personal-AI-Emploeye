@@ -1,6 +1,7 @@
 ---
 last_updated: 
-system_version: 
+system_version: Silver
+owner: 
 ---
 
 # AI Employee Dashboard
@@ -11,65 +12,53 @@ system_version:
 
 ## System Status
 
-| Component         | Status  | Last Checked |
-|-------------------|---------|--------------|
-| Filesystem Watcher  | ✅ Active   | — |
-| Gmail Watcher       | ✅ Active   | - |
-| LinkedIn Poster     | ✅ Active   | - |
-| /Approved/ Watcher  | ✅ Active   | — |
-| Scheduler           | ✅ Active   | - |
-| Vault Read/Write    | ✅ Ready    | — |
-| Claude Code Link    | ✅ Active   | — |
+| Component | Status | Last Checked |
+|---|---|---|
+| Filesystem Watcher | ⚙️ Setup needed | — |
+| Gmail Watcher | ⚙️ Setup needed | — |
+| LinkedIn Poster | ⚙️ Setup needed | — |
+| Approved/ Watcher | ⚙️ Setup needed | — |
+| Scheduler | ⚙️ Setup needed | — |
+| Vault Read/Write | ✅ Ready | — |
+| Claude Code Link | ⚙️ Setup needed | — |
 
 ---
 
 ## Inbox Summary
 
-- **Items in /Needs_Action (queued for Claude):** 
-- **Items in /Pending_Approval:** 
-- **Items Completed Today:** 
-- **⚠️ Owner action needed:** 
+- **Items in /Needs_Action (queued for Claude):** 0
+- **Items in /Pending_Approval:** 0
+- **Items Completed Today:** 0
+- **Owner action needed:** None
 
 ---
 
 ## Recent Activity
 
 | Time | Action | Result |
-|------|--------|--------|
-
+|---|---|---|
+| — | — | — |
 
 ---
 
 ## Weekly Snapshot
 
-| Metric              | Value |
-|---------------------|-------|
-| Tasks Completed     | 0|
-| Tasks In Progress   | 0|
-| Overdue Items       | 0|
-| Approvals Pending   | 0|
-| Weekly Briefing     | |
-| Daily Briefing      | |
-
----
-
-## Quick Actions for Claude
-
-Run the following in your terminal to trigger Claude:
-
-```bash
-# Process everything in /Needs_Action
-claude "Read CLAUDE.md for context, then process all files in AI_Employee_Vault/Needs_Action, create a Plan.md for each item in AI_Employee_Vault/Plans, and move completed items to AI_Employee_Vault/Done. Update Dashboard.md when done."
-```
+| Metric | Value |
+|---|---|
+| Tasks Completed | 0 |
+| Tasks In Progress | 0 |
+| Overdue Items | 0 |
+| Approvals Pending | 0 |
+| Weekly Briefing | — |
+| Daily Briefing | — |
 
 ---
 
 ## Active Plans
 
 | Plan | Status | Created |
-|------|--------|---------|
-|  |  |  |
-|  | |  |
+|---|---|---|
+| — | — | — |
 
 ---
 
@@ -79,4 +68,16 @@ claude "Read CLAUDE.md for context, then process all files in AI_Employee_Vault/
 
 ---
 
-*Last updated by: *
+## Quick Actions
+
+```bash
+# Process everything in /Needs_Action
+python orchestrator.py
+
+# Manual one-shot
+claude --print --dangerously-skip-permissions "Process all items in AI_Employee_Vault/Needs_Action"
+```
+
+---
+
+*Last updated by: AI Employee (Claude)*

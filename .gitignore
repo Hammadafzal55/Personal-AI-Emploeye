@@ -1,0 +1,67 @@
+# ── Credentials & Secrets (NEVER commit these) ───────────────────────────────
+.env
+secrets/
+*.token
+*.key
+credentials.json
+secrets/gmail_credentials.json
+secrets/gmail_token.json
+secrets/linkedin_session/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# ── Node / npm ────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+
+# ── Playwright ────────────────────────────────────────────────────────────────
+playwright-report/
+test-results/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Obsidian (keep .obsidian/ config but not workspace state) ─────────────────
+AI_Employee_Vault/.obsidian/workspace.json
+AI_Employee_Vault/.obsidian/workspace-mobile.json
+
+# ── Hackathon blueprint document (keep local only) ────────────────────────────
+Personal AI Employee Hackathon 0_*.md
+
+# ── Vault — personal data stays local, only boilerplate templates on GitHub ───
+# Runtime folders: all .md content is personal data — only README.md tracked
+AI_Employee_Vault/Done/*.md
+!AI_Employee_Vault/Done/README.md
+AI_Employee_Vault/Logs/*.md
+!AI_Employee_Vault/Logs/README.md
+AI_Employee_Vault/Plans/*.md
+!AI_Employee_Vault/Plans/README.md
+AI_Employee_Vault/Briefings/*.md
+!AI_Employee_Vault/Briefings/README.md
+AI_Employee_Vault/Needs_Action/*.md
+!AI_Employee_Vault/Needs_Action/README.md
+AI_Employee_Vault/Pending_Approval/*.md
+!AI_Employee_Vault/Pending_Approval/README.md
+AI_Employee_Vault/Pending_Approval/Approved/*.md
+!AI_Employee_Vault/Pending_Approval/Approved/README.md
+AI_Employee_Vault/Pending_Approval/Rejected/*.md
+!AI_Employee_Vault/Pending_Approval/Rejected/README.md
+AI_Employee_Vault/Pending_Approval/Cancelled/*.md
+!AI_Employee_Vault/Pending_Approval/Cancelled/README.md
+AI_Employee_Vault/Inbox/*.md
+!AI_Employee_Vault/Inbox/README.md
+# Dashboard, Handbook, Goals: tracked as empty boilerplates on GitHub.
+# Local changes (your real data) are hidden via: git update-index --assume-unchanged
