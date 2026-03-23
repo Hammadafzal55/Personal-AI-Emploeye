@@ -42,7 +42,7 @@ Hammad Afzal
 ### 4. Write the approval request
 Write `AI_Employee_Vault/Pending_Approval/EMAIL_SEND_<message_id>_<date>.md`:
 
-**CRITICAL: The frontmatter fields below are machine-read by `send_email.py`.
+**CRITICAL: The frontmatter fields below are machine-read by the gmail MCP server.
 Every field is required. Missing `to:` or `body_file:` will cause the send to silently fail.**
 
 ```markdown

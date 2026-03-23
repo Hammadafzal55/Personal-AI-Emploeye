@@ -60,7 +60,7 @@ A **Digital FTE (Full-Time Equivalent)** built with Claude Code + Obsidian.
 ║                                                              ║
 ║  [Human reviews in terminal]                                 ║
 ║  A → /Approved/ → orchestrator dispatches:                   ║
-║    📧 send_email.py   — Gmail API (OAuth2)                   ║
+║    📧 gmail MCP server — send_email tool (OAuth2)            ║
 ║    🔗 post_linkedin.py — Playwright MCP server               ║
 ║         ↓                                                     ║
 ║  Result logged → /Logs/YYYY-MM-DD.md                         ║
@@ -122,8 +122,11 @@ Personal-AI-Emploeye/
 │   ├── base_watcher.py          ← Abstract base class (BaseWatcher pattern)
 │   ├── filesystem_watcher.py    ← Watches /Inbox — no external API needed
 │   └── gmail_watcher.py         ← Polls Gmail History API for new emails only
+├── mcp_servers/
+│   └── gmail_mcp/               ← Node.js MCP server: send_email tool via Gmail API
+│       ├── index.js             ← MCP server entry point (@modelcontextprotocol/sdk)
+│       └── package.json         ← deps: @modelcontextprotocol/sdk + googleapis
 ├── actions/
-│   ├── send_email.py            ← Gmail API: send reply in thread
 │   └── post_linkedin.py         ← Playwright: types into LinkedIn Quill editor
 ├── setup/
 │   └── gmail_oauth_setup.py     ← One-time OAuth2 flow for Gmail
@@ -205,7 +208,7 @@ Terminal shows: *** APPROVAL NEEDED — press Enter to review ***
       ↓
 Decision [A/R] > A
       ↓
-File moved to /Approved/ → send_email.py dispatched → email sent
+File moved to /Approved/ → Claude + gmail MCP send_email tool → email sent
 ```
 
 Approval happens **before** any watcher or scheduler restarts — the orchestrator processes pending approvals synchronously at startup, then launches all background processes.
