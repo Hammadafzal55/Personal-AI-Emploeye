@@ -1,0 +1,56 @@
+# Secrets - NEVER commit these
+secrets/
+.env
+.env.*
+!.env.example
+.mcp.json
+.claude/settings.local.json
+.codex/
+client_secret*.json
+*token*.json
+*credentials*.json
+*.pem
+*.key
+
+# Personal vault and notes - keep local only
+AI_Employee_Vault/Business_Goals.md
+AI_Employee_Vault/Company_Handbook.md
+AI_Employee_Vault/Dashboard.md
+Personal\ AI\ Employee\ Hackathon\ 0_\ Building\ Autonomous\ FTEs\ in\ 2026.md
+
+# Local agent/plugin mirrors
+.agents/
+
+# Vault runtime data - keep templates, never personal operations
+AI_Employee_Vault/Briefings/*
+!AI_Employee_Vault/Briefings/README.md
+AI_Employee_Vault/Done/*
+!AI_Employee_Vault/Done/README.md
+AI_Employee_Vault/Logs/*
+!AI_Employee_Vault/Logs/README.md
+AI_Employee_Vault/Pending_Approval/*
+!AI_Employee_Vault/Pending_Approval/README.md
+!AI_Employee_Vault/Pending_Approval/Approved/
+!AI_Employee_Vault/Pending_Approval/Rejected/
+AI_Employee_Vault/Pending_Approval/Approved/*
+!AI_Employee_Vault/Pending_Approval/Approved/README.md
+AI_Employee_Vault/Pending_Approval/Rejected/*
+!AI_Employee_Vault/Pending_Approval/Rejected/README.md
+AI_Employee_Vault/Plans/*
+!AI_Employee_Vault/Plans/README.md
+AI_Employee_Vault/.obsidian/workspace.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node
+node_modules/
+**/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
