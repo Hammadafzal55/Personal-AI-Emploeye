@@ -2,52 +2,78 @@
 name: weekly-ceo-briefing
 description: |
   Generate the Monday Morning CEO Briefing. Audits the week's completed tasks,
-  reviews Business_Goals.md metrics, flags bottlenecks and cost anomalies,
-  and writes a structured briefing to /Briefings/. Triggered every Monday at 8AM
-  by the orchestrator scheduler.
+  reviews Business_Goals.md metrics, queries Odoo for live accounting data,
+  flags bottlenecks and cost anomalies, and writes a structured briefing to /Briefings/.
+  Triggered every Monday at 7AM by the orchestrator scheduler.
   Use when: it's Monday morning, or user asks for "CEO briefing" or "weekly summary".
 ---
 
 # Weekly CEO Briefing
 
 Generate the Monday Morning CEO Briefing — a proactive summary of the past week
-with revenue tracking, bottleneck detection, and actionable suggestions.
+with live revenue tracking from Odoo, bottleneck detection, and actionable suggestions.
 
 ## Instructions
 
 ### Step 1: Load All Context
+
 1. Read `AI_Employee_Vault/Business_Goals.md` → revenue targets, metrics, active projects.
 2. Read `AI_Employee_Vault/Company_Handbook.md` → business context (Section 10).
-3. Read `AI_Employee_Vault/Dashboard.md` → current status.
+3. Read `AI_Employee_Vault/Dashboard.md` → current system status.
 4. Scan `AI_Employee_Vault/Done/` → all files modified in the last 7 days.
 5. Scan `AI_Employee_Vault/Logs/` → last 7 days of log files for patterns.
 6. Scan `AI_Employee_Vault/Pending_Approval/` → anything still waiting for approval.
 
-### Step 2: Analyze the Week
+### Step 2: Pull Live Accounting Data from Odoo
+
+Call the Odoo MCP tools (if Odoo is running — gracefully skip if unreachable):
+
+1. `mcp__odoo__get_accounting_summary` → total invoiced, paid, outstanding for current month
+2. `mcp__odoo__list_invoices` with `state=posted` and `limit=10` → recent confirmed invoices
+3. If any invoices are in `state=draft`, flag them as "needs posting"
+
+If Odoo is unreachable, note "Odoo offline — accounting data unavailable" and continue with vault data only.
+
+### Step 3: Pull Social Media Insights
+
+Call Facebook MCP tools (if configured — gracefully skip if credentials missing):
+
+1. `mcp__facebook__get_facebook_insights` with `period=week` → impressions, engaged users, fans
+2. `mcp__facebook__get_instagram_insights` with `period=week` → reach, profile views, followers
+
+If Facebook credentials are not configured, note "Social insights unavailable" and continue.
+
+### Step 4: Analyze the Week
 
 #### Revenue Analysis
-- Sum any revenue amounts mentioned in Done/ or Logs/
+- Use Odoo `get_accounting_summary` data as primary source
+- Fall back to vault Done/ files if Odoo is offline
 - Compare to monthly target in Business_Goals.md
-- Calculate MTD (month-to-date) progress
+- Calculate MTD progress as a percentage
 
 #### Task Analysis
-- Count tasks completed this week (Done/ files)
-- Identify any tasks that took unusually long (check received vs. processed timestamps)
+- Count tasks completed this week (Done/ files modified in last 7 days)
+- Identify tasks that took unusually long (compare received vs. processed timestamps in frontmatter)
 - Flag overdue items still in Needs_Action or Pending_Approval
 
+#### Social Media Analysis
+- Compare LinkedIn, Facebook, Instagram engagement vs. targets in Business_Goals.md
+- Flag if any platform is below alert threshold
+
 #### Cost / Subscription Audit
-Apply these rules from Business_Goals.md:
+Apply rules from Business_Goals.md:
 - Flag subscriptions with no activity in 30 days
 - Flag any cost increase > 20%
 - Flag duplicate tools
 
 #### Bottleneck Detection
 Look for:
-- Tasks that were re-queued more than once
+- Tasks re-queued more than once
 - Approval requests that expired or sat > 24h
 - Repeated errors in Logs/
+- Draft invoices in Odoo not posted for > 7 days
 
-### Step 3: Write the Briefing
+### Step 5: Write the Briefing
 
 Save to `AI_Employee_Vault/Briefings/<YYYY-MM-DD>_Monday_Briefing.md`:
 
@@ -56,6 +82,7 @@ Save to `AI_Employee_Vault/Briefings/<YYYY-MM-DD>_Monday_Briefing.md`:
 generated: <ISO timestamp>
 period: <last Monday> to <yesterday>
 type: ceo_briefing
+odoo_connected: true/false
 ---
 
 # Monday Morning CEO Briefing
@@ -64,13 +91,22 @@ type: ceo_briefing
 ## Executive Summary
 <2–3 sentence overview of the week>
 
-## Revenue
-- **This Week:** $<amount> (<X>% of weekly target)
-- **MTD:** $<amount> (<X>% of $<monthly target>)
+## Revenue (via Odoo)
+- **Invoiced This Month:** $<amount>
+- **Collected:** $<amount>
+- **Outstanding:** $<amount>
+- **MTD Progress:** <X>% of $<monthly target>
 - **Trend:** On track / Behind / Ahead
 
+## Social Media Performance
+| Platform | Impressions | Engagement | Followers/Fans |
+|----------|-------------|------------|----------------|
+| LinkedIn | — | — | — |
+| Facebook | <from MCP> | <from MCP> | <from MCP> |
+| Instagram | <from MCP> | <from MCP> | <from MCP> |
+
 ## Completed Tasks (<N> total)
-<bullet list of significant completions>
+<bullet list of significant completions from Done/>
 
 ## Pending Items
 | Item | Waiting Since | Action Needed |
@@ -90,25 +126,31 @@ type: ceo_briefing
 ### Upcoming Deadlines
 <from Business_Goals.md active projects>
 
+### Odoo Action Items
+<draft invoices to post, overdue payments, etc. — or "None">
+
 ### Recommended Focus This Week
 <1–3 specific recommendations based on goals vs. actuals>
 
 ---
-*Generated by AI Employee v0.1 (Silver)*
+*Generated by AI Employee (Gold Tier) — Odoo: <connected/offline> | Social: <connected/offline>*
 ```
 
-### Step 4: Update Dashboard
+### Step 6: Update Dashboard
 - Update `Dashboard.md` → add briefing link to Recent Activity
 - Update "Weekly Snapshot" section with this week's numbers
+- Update any Odoo/social status if connectivity changed
 
-### Step 5: Log
-- Append to `AI_Employee_Vault/Logs/<YYYY-MM-DD>.md`:
-  ```
-  ### <time> — weekly_ceo_briefing_generated
-  - **file:** Briefings/<date>_Monday_Briefing.md
-  - **tasks_reviewed:** <N>
-  - **result:** success
-  ```
+### Step 7: Log
+Append to `AI_Employee_Vault/Logs/<YYYY-MM-DD>.md`:
+```
+### <time> — weekly_ceo_briefing_generated
+- **file:** Briefings/<date>_Monday_Briefing.md
+- **tasks_reviewed:** <N>
+- **odoo_connected:** true/false
+- **social_connected:** true/false
+- **result:** success
+```
 
 ## Output
 State the briefing file path when done so the user can open it in Obsidian.

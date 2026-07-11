@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "gmail": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp_servers/gmail_mcp/index.js"
+      ],
+      "env": {
+        "GMAIL_TOKEN_PATH": "secrets/gmail_token.json",
+        "GMAIL_CREDENTIALS_PATH": "secrets/gmail_credentials.json",
+        "DRY_RUN": "true"
+      }
+    },
+    "odoo": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp_servers/odoo_mcp/index.js"
+      ],
+      "env": {
+        "ODOO_URL": "http://localhost:8069",
+        "ODOO_DB": "odoo",
+        "ODOO_USERNAME": "admin",
+        "ODOO_PASSWORD": "admin",
+        "DRY_RUN": "true"
+      }
+    },
+    "facebook": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp_servers/facebook_mcp/index.js"
+      ],
+      "env": {
+        "FACEBOOK_APP_ID": "YOUR_FACEBOOK_APP_ID",
+        "FACEBOOK_APP_SECRET": "YOUR_FACEBOOK_APP_SECRET",
+        "FACEBOOK_PAGE_ID": "YOUR_FACEBOOK_PAGE_ID",
+        "FACEBOOK_PAGE_ACCESS_TOKEN": "YOUR_FACEBOOK_PAGE_ACCESS_TOKEN",
+        "INSTAGRAM_BUSINESS_ACCOUNT_ID": "YOUR_INSTAGRAM_BUSINESS_ACCOUNT_ID",
+        "DRY_RUN": "true"
+      }
+    }
+  }
+}

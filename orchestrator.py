@@ -89,6 +89,9 @@ GMAIL_ENABLED          = GMAIL_TOKEN_PATH.exists()
 LINKEDIN_SESSION_PATH  = Path(os.getenv("LINKEDIN_SESSION_PATH", "secrets/linkedin_session"))
 LINKEDIN_ENABLED       = LINKEDIN_SESSION_PATH.exists()
 
+FACEBOOK_TOKEN         = os.getenv("FACEBOOK_PAGE_ACCESS_TOKEN", "")
+FACEBOOK_ENABLED       = bool(FACEBOOK_TOKEN)
+
 # ---------------------------------------------------------------------------
 # Prompts for Claude
 # ---------------------------------------------------------------------------
@@ -256,6 +259,26 @@ def run_claude(prompt: str, label: str = "claude") -> bool:
         _claude_lock.release()
 
 
+def _write_ralph_state(prompt: str, task_files: list):
+    """Write state file for the Ralph Wiggum Stop hook (Gold tier)."""
+    import json as _json
+    state_path = Path("secrets/ralph_state.json")
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    existing = {}
+    if state_path.exists():
+        try:
+            existing = _json.loads(state_path.read_text())
+        except Exception:
+            pass
+    state = {
+        "prompt": prompt,
+        "iterations": existing.get("iterations", 0),
+        "task_files": task_files,
+        "max_iterations": 10,
+    }
+    state_path.write_text(_json.dumps(state, indent=2))
+
+
 def append_log(action_type: str, details: dict):
     LOGS_PATH.mkdir(parents=True, exist_ok=True)
     log_file = LOGS_PATH / f"{datetime.now().strftime('%Y-%m-%d')}.md"
@@ -350,15 +373,18 @@ def _dispatch_approved(path: Path):
     append_log("approval_dispatched", {"file": path.name, "action": action})
 
     if action == "send_email":
-        # Use Claude + gmail MCP server — Claude calls the gmail.send_email tool
+        # Use Claude + local gmail MCP server — Claude calls mcp__gmail__send_email
         logger.info(f"Dispatching send_email via gmail MCP for {path.name}")
         prompt = (
-            "Run the process-approvals skill. "
-            f"Process this single approved email file: {path}. "
-            "Read the frontmatter (to, subject, thread_id, in_reply_to, body_file). "
-            "Use the gmail MCP send_email tool to send the email. "
-            "Move the approved file to AI_Employee_Vault/Done/ on success. "
-            "Append a log entry to AI_Employee_Vault/Logs/ and update Dashboard.md."
+            f"Read the approved email file at: {path}\n"
+            "Parse its frontmatter fields: to, subject, thread_id, in_reply_to, body_file.\n"
+            "If body_file is set, read that file to get the email body text. "
+            "Otherwise extract the body from the '## Email to Send' section.\n"
+            "Call the local MCP tool mcp__gmail__send_email with: to, subject, body, "
+            "thread_id (if present), in_reply_to (if present).\n"
+            "On success: move the approved file to AI_Employee_Vault/Done/, "
+            "append a log entry to AI_Employee_Vault/Logs/, and update Dashboard.md.\n"
+            "IMPORTANT: Use mcp__gmail__send_email — NOT the claude.ai Gmail integration."
         )
         threading.Thread(
             target=run_claude,
@@ -378,6 +404,32 @@ def _dispatch_approved(path: Path):
             ).start()
         else:
             logger.error(f"post_linkedin script not found: {script}")
+
+    elif action in ("post_facebook", "post_instagram", "post_facebook_comment"):
+        # Facebook/Instagram: Claude calls mcp__facebook__ tools
+        tool_name = {
+            "post_facebook": "post_facebook",
+            "post_instagram": "post_instagram",
+            "post_facebook_comment": "post_comment",
+        }[action]
+        platform = {
+            "post_facebook": "Facebook",
+            "post_instagram": "Instagram",
+            "post_facebook_comment": "Facebook comment",
+        }[action]
+        logger.info(f"Dispatching {platform} via Facebook MCP for {path.name}")
+        prompt = (
+            "Run the process-approvals skill. "
+            f"Process this single approved social file: {path}. "
+            f"Use the mcp__facebook__{tool_name} MCP tool. "
+            "Move the approved file to AI_Employee_Vault/Done/ on success. "
+            "Append a log entry to AI_Employee_Vault/Logs/ and update Dashboard.md."
+        )
+        threading.Thread(
+            target=run_claude,
+            args=(prompt, f"{action}-mcp"),
+            daemon=True,
+        ).start()
 
     else:
         # Unknown action — fall back to Claude process-approvals skill
@@ -464,13 +516,18 @@ def _format_approval_display(path: Path) -> str:
 
 
 def _do_approve(path: Path):
-    """Move an approval file to /Approved/ and dispatch the action."""
+    """Move an approval file to /Approved/ and let the ApprovedFolderHandler watchdog dispatch it.
+
+    Do NOT call _dispatch_approved() here — the watchdog fires on_created when the file
+    lands in /Approved/ and dispatches it exactly once. Calling it here too causes a
+    double-dispatch race condition (both fire within ~1 second of each other).
+    """
     dest = APPROVED_PATH / path.name
     try:
         path.rename(dest)
         logger.info(f"APPROVED: {path.name} — moved to Approved/.")
         append_log("approval_granted", {"file": path.name})
-        _dispatch_approved(dest)
+        # Watchdog handles dispatch — do not call _dispatch_approved(dest) here.
     except FileNotFoundError:
         logger.warning(f"File already moved: {path.name} — skipping.")
     _queued_approval_names.discard(path.name)
@@ -771,6 +828,34 @@ def run_linkedin_post_draft():
     append_log("scheduled_linkedin_draft", {"time": datetime.now().isoformat()})
 
 
+def run_facebook_post_draft():
+    if not FACEBOOK_ENABLED:
+        logger.info("Scheduler: Facebook post skipped — FACEBOOK_PAGE_ACCESS_TOKEN not set.")
+        return
+    logger.info("Scheduler: drafting Facebook post...")
+    prompt = (
+        "Run the draft-facebook-post skill. "
+        "Read AI_Employee_Vault/Business_Goals.md and AI_Employee_Vault/Company_Handbook.md. "
+        "Draft a Facebook post and route it to AI_Employee_Vault/Pending_Approval/ for review."
+    )
+    run_claude(prompt, label="draft-facebook-post")
+    append_log("scheduled_facebook_draft", {"time": datetime.now().isoformat()})
+
+
+def run_instagram_post_draft():
+    if not FACEBOOK_ENABLED:
+        logger.info("Scheduler: Instagram post skipped — FACEBOOK_PAGE_ACCESS_TOKEN not set.")
+        return
+    logger.info("Scheduler: drafting Instagram post...")
+    prompt = (
+        "Run the draft-instagram-post skill. "
+        "Read AI_Employee_Vault/Business_Goals.md and AI_Employee_Vault/Company_Handbook.md. "
+        "Draft an Instagram caption and route it to AI_Employee_Vault/Pending_Approval/ for review."
+    )
+    run_claude(prompt, label="draft-instagram-post")
+    append_log("scheduled_instagram_draft", {"time": datetime.now().isoformat()})
+
+
 def run_done_cleanup():
     """Purge low-value files from /Done/ that are no longer needed.
 
@@ -961,6 +1046,14 @@ def start_scheduler():
     schedule.every().day.at("09:00").do(run_linkedin_post_draft)
     logger.info("Scheduled: LinkedIn post draft every day at 09:00")
 
+    # Facebook post draft: every day at 10:00
+    schedule.every().day.at("10:00").do(run_facebook_post_draft)
+    logger.info("Scheduled: Facebook post draft every day at 10:00")
+
+    # Instagram post draft: every day at 11:00
+    schedule.every().day.at("11:00").do(run_instagram_post_draft)
+    logger.info("Scheduled: Instagram post draft every day at 11:00")
+
     # Done/ cleanup: every Sunday at 23:00
     schedule.every().sunday.at("23:00").do(run_done_cleanup)
     logger.info("Scheduled: Done/ cleanup every Sunday at 23:00")
@@ -988,6 +1081,8 @@ def main():
     logger.info(f"Dry run:        {DRY_RUN}")
     logger.info(f"Gmail watcher:  {'✅ enabled' if GMAIL_ENABLED else '❌ disabled (run gmail_oauth_setup.py)'}")
     logger.info(f"LinkedIn:       {'✅ session found' if LINKEDIN_ENABLED else '❌ disabled (run post_linkedin.py --setup)'}")
+    logger.info(f"Facebook/IG:    {'✅ token found' if FACEBOOK_ENABLED else '⚠️  disabled (add FACEBOOK_PAGE_ACCESS_TOKEN to .env)'}")
+    logger.info(f"Odoo:           {os.getenv('ODOO_URL', 'http://localhost:8069')} (connect on first CEO briefing)")
     logger.info(f"Daily briefing: {DAILY_BRIEFING_TIME}")
     if DRY_RUN:
         logger.info("NOTE: DRY_RUN=true — Claude/actions will NOT execute. Set DRY_RUN=false in .env.")
@@ -1037,7 +1132,9 @@ def main():
             elif items:
                 _last_approval_skip_count = -1  # reset so next approval batch logs again
                 logger.info(f"Found {len(items)} item(s) in Needs_Action: {[f.name for f in items]}")
-                run_claude(make_process_prompt(), label="process-inbox-tasks")
+                _prompt = make_process_prompt()
+                _write_ralph_state(_prompt, [f.name for f in items])
+                run_claude(_prompt, label="process-inbox-tasks")
                 triggered = True
                 # Immediately queue any approval files Claude just wrote — don't wait for watchdog
                 _rescan_pending_approvals()

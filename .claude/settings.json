@@ -8,5 +8,18 @@
         "GMAIL_CREDENTIALS_PATH": "secrets/gmail_credentials.json"
       }
     }
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ralph_wiggum.py"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,0 +1,61 @@
+# Personal AI Employee — Odoo 17 Community + PostgreSQL 15
+# Usage:
+#   docker compose up -d        # start
+#   docker compose down         # stop (data preserved)
+#   docker compose down -v      # stop + wipe all data
+
+services:
+  db:
+    image: postgres:15
+    container_name: ai_employee_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: odoo
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  odoo:
+    image: odoo:17
+    container_name: ai_employee_odoo
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8069:8069"
+    environment:
+      HOST: db
+      PORT: 5432
+      USER: odoo
+      PASSWORD: odoo
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - ./odoo_config:/etc/odoo
+    command: >
+      odoo
+      --db_host=db
+      --db_port=5432
+      --db_user=odoo
+      --db_password=odoo
+      --database=odoo
+      --without-demo=all
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8069/web/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  postgres_data:
+    name: ai_employee_postgres_data
+  odoo_data:
+    name: ai_employee_odoo_data
