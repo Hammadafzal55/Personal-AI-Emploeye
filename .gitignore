@@ -2,7 +2,6 @@
 secrets/
 .env
 .env.*
-!.env.example
 .mcp.json
 .claude/settings.local.json
 .codex/
@@ -12,11 +11,7 @@ client_secret*.json
 *.pem
 *.key
 
-# Personal vault and notes - keep local only
-AI_Employee_Vault/Business_Goals.md
-AI_Employee_Vault/Company_Handbook.md
-AI_Employee_Vault/Dashboard.md
-Personal\ AI\ Employee\ Hackathon\ 0_\ Building\ Autonomous\ FTEs\ in\ 2026.md
+
 
 # Local agent/plugin mirrors
 .agents/
